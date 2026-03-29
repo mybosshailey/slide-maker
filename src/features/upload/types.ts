@@ -14,6 +14,54 @@ export type OCRResult = {
   provider: "openai" | "mock";
 };
 
+export type QuestionType =
+  | "purpose"
+  | "emotion-change"
+  | "claim"
+  | "underline-meaning"
+  | "gist"
+  | "topic"
+  | "title"
+  | "grammar"
+  | "vocabulary"
+  | "blank"
+  | "irrelevant-sentence"
+  | "sentence-order"
+  | "sentence-insertion"
+  | "summary-blank"
+  | "unknown";
+
+export type ChoicePlacement = "separate" | "embedded-in-passage" | "mixed";
+
+export type ChoiceItem = {
+  label: string;
+  text: string;
+};
+
+export type PassageBlock = {
+  kind:
+    | "paragraph"
+    | "blank"
+    | "ordered-paragraph"
+    | "insert-position";
+  text: string;
+  marker?: string;
+};
+
+export type ProblemParseResult = {
+  fileId: string;
+  itemNumber?: string;
+  instruction: string;
+  questionType: QuestionType;
+  choicePlacement: ChoicePlacement;
+  passage: string;
+  passageBlocks: PassageBlock[];
+  choices: ChoiceItem[];
+  promptBox?: string;
+  summaryText?: string;
+  provider: "rule-based";
+};
+
 export type AnalysisSection = {
   heading: string;
   bullets: string[];

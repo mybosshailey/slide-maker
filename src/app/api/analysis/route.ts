@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { runAnalysis } from "@/features/analysis/service";
-import type { OCRResult } from "@/features/upload/types";
+import type { ProblemParseResult } from "@/features/upload/types";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as {
-    ocrResult?: OCRResult;
+    parseResult?: ProblemParseResult;
   };
 
-  if (!body.ocrResult) {
-    return NextResponse.json({ error: "ocrResult is required." }, { status: 400 });
+  if (!body.parseResult) {
+    return NextResponse.json({ error: "parseResult is required." }, { status: 400 });
   }
 
   try {
-    const result = await runAnalysis(body.ocrResult);
+    const result = await runAnalysis(body.parseResult);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(

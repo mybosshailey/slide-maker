@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnalysisPanel } from "@/components/analysis-panel";
+import { ProblemParsePanel } from "@/components/problem-parse-panel";
 import type { OCRResult } from "@/features/upload/types";
 
 type OCRPanelProps = {
@@ -75,7 +75,7 @@ export function OCRPanel({ fileId }: OCRPanelProps) {
               <p key={`${ocrResult.fileId}-${index}`}>{paragraph}</p>
             ))}
           </div>
-          <AnalysisPanel ocrResult={ocrResult} />
+          <ProblemParsePanel ocrResult={ocrResult} />
         </div>
       ) : null}
     </section>

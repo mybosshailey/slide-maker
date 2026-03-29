@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { AnalysisResult, OCRResult } from "@/features/upload/types";
+import type { AnalysisResult, ProblemParseResult } from "@/features/upload/types";
 
 type AnalysisPanelProps = {
-  ocrResult: OCRResult;
+  parseResult: ProblemParseResult;
 };
 
-export function AnalysisPanel({ ocrResult }: AnalysisPanelProps) {
+export function AnalysisPanel({ parseResult }: AnalysisPanelProps) {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export function AnalysisPanel({ ocrResult }: AnalysisPanelProps) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ ocrResult })
+        body: JSON.stringify({ parseResult })
       });
 
       const payload = (await response.json()) as AnalysisResult & { error?: string };
@@ -47,8 +47,8 @@ export function AnalysisPanel({ ocrResult }: AnalysisPanelProps) {
         <div>
           <p className="status-title">Text analysis step</p>
           <p className="status-copy">
-            Turn OCR output into slide-ready structure with a title, summary, and
-            teacher-focused sections.
+            Turn parsed passage content into slide-ready structure with a title,
+            summary, and teacher-focused sections.
           </p>
         </div>
         <button

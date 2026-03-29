@@ -217,6 +217,12 @@ input {
   border-top: 1px solid var(--line);
 }
 
+.problem-parse-grid {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
 .ocr-text-block {
   margin-top: 0.5rem;
   padding: 1rem;
@@ -270,6 +276,10 @@ input {
 
 .teacher-notes {
   color: var(--muted);
+}
+
+.analysis-list li + li {
+  margin-top: 0.35rem;
 }
 
 .sr-only {

@@ -1,8 +1,8 @@
-import type { AnalysisResult, OCRResult } from "@/features/upload/types";
+import type { AnalysisResult, ProblemParseResult } from "@/features/upload/types";
 import { buildMockAnalysisResult } from "@/features/analysis/fallback";
 import { createStructuredOpenAIResponse, hasOpenAIKey } from "@/lib/openai";
 
-async function analyzeWithOpenAI(ocrResult: OCRResult): Promise<AnalysisResult> {
+async function analyzeWithOpenAI(parseResult: ProblemParseResult): Promise<AnalysisResult> {
   const parsed = await createStructuredOpenAIResponse<
     Omit<AnalysisResult, "fileId" | "provider">
   >(
@@ -13,11 +13,21 @@ async function analyzeWithOpenAI(ocrResult: OCRResult): Promise<AnalysisResult> 
           {
             type: "input_text",
             text:
-              "Analyze the OCR text from an English reading passage for lesson-slide preparation. Return a concise documentTitle, one short summary, and 2 to 4 sections. Each section must have a heading, 2 to 4 bullets, and 1 to 2 teacherNotes. Keep the content concise and teacher-focused."
+              "Analyze the parsed content from a Korean CSAT-style English question for lesson-slide preparation. Focus on the actual passage content, not the choice labels. Return a concise documentTitle, one short summary, and 2 to 4 sections. Each section must have a heading, 2 to 4 bullets, and 1 to 2 teacherNotes. Keep the content concise and teacher-focused."
           },
           {
             type: "input_text",
-            text: ocrResult.rawText
+            text: JSON.stringify(
+              {
+                instruction: parseResult.instruction,
+                questionType: parseResult.questionType,
+                passage: parseResult.passage,
+                passageBlocks: parseResult.passageBlocks,
+                choices: parseResult.choices
+              },
+              null,
+              2
+            )
           }
         ]
       }
@@ -54,7 +64,7 @@ async function analyzeWithOpenAI(ocrResult: OCRResult): Promise<AnalysisResult> 
   );
 
   return {
-    fileId: ocrResult.fileId,
+    fileId: parseResult.fileId,
     documentTitle: parsed.documentTitle,
     summary: parsed.summary,
     sections: parsed.sections,
@@ -62,10 +72,10 @@ async function analyzeWithOpenAI(ocrResult: OCRResult): Promise<AnalysisResult> 
   };
 }
 
-export async function runAnalysis(ocrResult: OCRResult): Promise<AnalysisResult> {
+export async function runAnalysis(parseResult: ProblemParseResult): Promise<AnalysisResult> {
   if (!hasOpenAIKey()) {
-    return buildMockAnalysisResult(ocrResult);
+    return buildMockAnalysisResult(parseResult);
   }
 
-  return analyzeWithOpenAI(ocrResult);
+  return analyzeWithOpenAI(parseResult);
 }

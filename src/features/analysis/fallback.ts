@@ -1,4 +1,4 @@
-import type { AnalysisResult, OCRResult } from "@/features/upload/types";
+import type { AnalysisResult, ProblemParseResult } from "@/features/upload/types";
 
 function sentenceChunks(text: string) {
   return text
@@ -7,12 +7,13 @@ function sentenceChunks(text: string) {
     .filter(Boolean);
 }
 
-export function buildMockAnalysisResult(ocrResult: OCRResult): AnalysisResult {
-  const sentences = sentenceChunks(ocrResult.rawText);
+export function buildMockAnalysisResult(parseResult: ProblemParseResult): AnalysisResult {
+  const sourceText = parseResult.passage || parseResult.instruction;
+  const sentences = sentenceChunks(sourceText);
   const headingSeed = sentences[0] ?? "Uploaded Passage";
 
   return {
-    fileId: ocrResult.fileId,
+    fileId: parseResult.fileId,
     documentTitle: headingSeed.slice(0, 60),
     summary: sentences.slice(0, 2).join(" "),
     sections: [
