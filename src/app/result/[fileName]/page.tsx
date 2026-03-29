@@ -1,3 +1,5 @@
+import { OCRPanel } from "@/components/ocr-panel";
+
 type ResultPageProps = {
   params: Promise<{
     fileName: string;
@@ -69,6 +71,8 @@ export default async function ResultPage({
           </div>
         </aside>
       </section>
+
+      <OCRPanel fileId={fileName} />
     </main>
   );
 }

@@ -192,8 +192,46 @@ input {
   padding: 1.25rem 1.5rem;
 }
 
+.ocr-panel {
+  margin-top: 1rem;
+}
+
+.ocr-header {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
 .status-title {
   margin: 0;
+}
+
+.ocr-result {
+  margin-top: 1rem;
+}
+
+.ocr-text-block {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.ocr-text-block p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.ocr-text-block p + p {
+  margin-top: 0.85rem;
+}
+
+.error-text {
+  margin: 1rem 0 0;
+  color: #9d2f2f;
+  font-weight: 700;
 }
 
 .sr-only {
@@ -231,6 +269,10 @@ input {
 
   .result-layout {
     grid-template-columns: 1fr;
+  }
+
+  .ocr-header {
+    flex-direction: column;
   }
 
   .primary-button {

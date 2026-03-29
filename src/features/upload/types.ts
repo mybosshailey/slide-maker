@@ -6,3 +6,10 @@ export type UploadResponse = {
   size: number;
   previewUrl: string;
 };
+
+export type OCRResult = {
+  fileId: string;
+  rawText: string;
+  paragraphs: string[];
+  provider: "openai" | "mock";
+};
