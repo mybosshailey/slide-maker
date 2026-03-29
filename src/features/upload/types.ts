@@ -13,3 +13,17 @@ export type OCRResult = {
   paragraphs: string[];
   provider: "openai" | "mock";
 };
+
+export type AnalysisSection = {
+  heading: string;
+  bullets: string[];
+  teacherNotes: string[];
+};
+
+export type AnalysisResult = {
+  fileId: string;
+  documentTitle: string;
+  summary: string;
+  sections: AnalysisSection[];
+  provider: "openai" | "mock";
+};

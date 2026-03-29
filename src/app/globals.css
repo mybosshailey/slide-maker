@@ -211,6 +211,12 @@ input {
   margin-top: 1rem;
 }
 
+.analysis-panel {
+  margin-top: 1rem;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--line);
+}
+
 .ocr-text-block {
   margin-top: 0.5rem;
   padding: 1rem;
@@ -232,6 +238,38 @@ input {
   margin: 1rem 0 0;
   color: #9d2f2f;
   font-weight: 700;
+}
+
+.analysis-summary {
+  margin-top: 0.35rem;
+}
+
+.analysis-sections {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.analysis-section-card {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.analysis-section-title {
+  font-size: 1rem;
+}
+
+.analysis-list {
+  margin: 0.65rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--ink);
+  line-height: 1.65;
+}
+
+.teacher-notes {
+  color: var(--muted);
 }
 
 .sr-only {
