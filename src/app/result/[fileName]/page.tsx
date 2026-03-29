@@ -1,4 +1,5 @@
 import { OCRPanel } from "@/components/ocr-panel";
+import type { QuestionTypeHint } from "@/features/upload/types";
 
 type ResultPageProps = {
   params: Promise<{
@@ -7,6 +8,7 @@ type ResultPageProps = {
   searchParams: Promise<{
     originalName?: string;
     size?: string;
+    questionTypeHint?: QuestionTypeHint;
   }>;
 };
 
@@ -29,7 +31,7 @@ export default async function ResultPage({
   searchParams
 }: ResultPageProps) {
   const { fileName } = await params;
-  const { originalName, size } = await searchParams;
+  const { originalName, size, questionTypeHint } = await searchParams;
 
   return (
     <main className="page-shell">
@@ -68,11 +70,15 @@ export default async function ResultPage({
               <p className="meta-label">File size</p>
               <p className="meta-value">{formatFileSize(size)}</p>
             </div>
+            <div>
+              <p className="meta-label">Problem type hint</p>
+              <p className="meta-value">{questionTypeHint ?? "auto"}</p>
+            </div>
           </div>
         </aside>
       </section>
 
-      <OCRPanel fileId={fileName} />
+      <OCRPanel fileId={fileName} questionTypeHint={questionTypeHint ?? "auto"} />
     </main>
   );
 }

@@ -5,6 +5,7 @@ export type UploadResponse = {
   mimeType: string;
   size: number;
   previewUrl: string;
+  questionTypeHint: QuestionTypeHint;
 };
 
 export type OCRResult = {
@@ -31,6 +32,8 @@ export type QuestionType =
   | "summary-blank"
   | "unknown";
 
+export type QuestionTypeHint = QuestionType | "auto";
+
 export type ChoicePlacement = "separate" | "embedded-in-passage" | "mixed";
 
 export type ChoiceItem = {
@@ -52,7 +55,9 @@ export type ProblemParseResult = {
   fileId: string;
   itemNumber?: string;
   instruction: string;
+  detectedQuestionType: QuestionType;
   questionType: QuestionType;
+  questionTypeSource: "auto" | "user";
   choicePlacement: ChoicePlacement;
   passage: string;
   passageBlocks: PassageBlock[];

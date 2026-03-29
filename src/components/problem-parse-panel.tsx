@@ -2,13 +2,21 @@
 
 import { useState } from "react";
 import { AnalysisPanel } from "@/components/analysis-panel";
-import type { OCRResult, ProblemParseResult } from "@/features/upload/types";
+import type {
+  OCRResult,
+  ProblemParseResult,
+  QuestionTypeHint
+} from "@/features/upload/types";
 
 type ProblemParsePanelProps = {
   ocrResult: OCRResult;
+  questionTypeHint: QuestionTypeHint;
 };
 
-export function ProblemParsePanel({ ocrResult }: ProblemParsePanelProps) {
+export function ProblemParsePanel({
+  ocrResult,
+  questionTypeHint
+}: ProblemParsePanelProps) {
   const [parseResult, setParseResult] = useState<ProblemParseResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -23,7 +31,7 @@ export function ProblemParsePanel({ ocrResult }: ProblemParsePanelProps) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ ocrResult })
+        body: JSON.stringify({ ocrResult, questionTypeHint })
       });
 
       const payload = (await response.json()) as ProblemParseResult & { error?: string };
@@ -68,6 +76,10 @@ export function ProblemParsePanel({ ocrResult }: ProblemParsePanelProps) {
         <div className="analysis-result">
           <p className="meta-label">Question type</p>
           <p className="meta-value">{parseResult.questionType}</p>
+          <p className="meta-label">Detected type</p>
+          <p className="meta-value">{parseResult.detectedQuestionType}</p>
+          <p className="meta-label">Type source</p>
+          <p className="meta-value">{parseResult.questionTypeSource}</p>
           <p className="meta-label">Choice placement</p>
           <p className="meta-value">{parseResult.choicePlacement}</p>
           {parseResult.itemNumber ? (

@@ -5,6 +5,7 @@ import { getSafeFileName, getUploadPath, uploadDir } from "@/lib/upload-storage"
 export async function POST(request: Request) {
   const formData = await request.formData();
   const image = formData.get("image");
+  const questionTypeHint = formData.get("questionTypeHint");
 
   if (!(image instanceof File)) {
     return NextResponse.json(
@@ -34,6 +35,8 @@ export async function POST(request: Request) {
     originalName: image.name,
     mimeType: image.type,
     size: image.size,
-    previewUrl: `/api/uploads/${encodeURIComponent(fileName)}`
+    previewUrl: `/api/uploads/${encodeURIComponent(fileName)}`,
+    questionTypeHint:
+      typeof questionTypeHint === "string" ? questionTypeHint : "auto"
   });
 }

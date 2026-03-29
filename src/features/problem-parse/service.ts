@@ -3,7 +3,8 @@ import type {
   ChoiceItem,
   OCRResult,
   PassageBlock,
-  ProblemParseResult
+  ProblemParseResult,
+  QuestionTypeHint
 } from "@/features/upload/types";
 
 function extractItemNumber(text: string) {
@@ -134,19 +135,23 @@ function detectPromptBox(questionType: ProblemParseResult["questionType"], passa
   return firstSentence?.[1]?.trim();
 }
 
-export function parseProblemFromOCR(ocrResult: OCRResult): ProblemParseResult {
+export function parseProblemFromOCR(
+  ocrResult: OCRResult,
+  questionTypeHint: QuestionTypeHint
+): ProblemParseResult {
   const itemNumber = extractItemNumber(ocrResult.rawText);
   const textWithoutNumber = removeItemNumber(ocrResult.rawText);
   const pattern = findQuestionPattern(textWithoutNumber);
 
   let instruction = "문제 제시 문장을 찾지 못했습니다.";
-  let questionType: ProblemParseResult["questionType"] = "unknown";
+  const detectedQuestionType = pattern?.questionType ?? "unknown";
+  const questionType =
+    questionTypeHint !== "auto" ? questionTypeHint : detectedQuestionType;
   let choicePlacement: ProblemParseResult["choicePlacement"] = "separate";
   let bodyText = textWithoutNumber;
 
   if (pattern) {
     instruction = pattern.stem;
-    questionType = pattern.questionType;
     choicePlacement = pattern.choicePlacement;
     bodyText = textWithoutNumber.split(pattern.stem).slice(1).join(pattern.stem).trim();
   }
@@ -158,7 +163,9 @@ export function parseProblemFromOCR(ocrResult: OCRResult): ProblemParseResult {
     fileId: ocrResult.fileId,
     itemNumber,
     instruction,
+    detectedQuestionType,
     questionType,
+    questionTypeSource: questionTypeHint !== "auto" ? "user" : "auto",
     choicePlacement,
     passage: passageText,
     passageBlocks,

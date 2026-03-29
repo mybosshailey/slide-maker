@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { ProblemParsePanel } from "@/components/problem-parse-panel";
-import type { OCRResult } from "@/features/upload/types";
+import type { OCRResult, QuestionTypeHint } from "@/features/upload/types";
 
 type OCRPanelProps = {
   fileId: string;
+  questionTypeHint: QuestionTypeHint;
 };
 
-export function OCRPanel({ fileId }: OCRPanelProps) {
+export function OCRPanel({ fileId, questionTypeHint }: OCRPanelProps) {
   const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -75,7 +76,10 @@ export function OCRPanel({ fileId }: OCRPanelProps) {
               <p key={`${ocrResult.fileId}-${index}`}>{paragraph}</p>
             ))}
           </div>
-          <ProblemParsePanel ocrResult={ocrResult} />
+          <ProblemParsePanel
+            ocrResult={ocrResult}
+            questionTypeHint={questionTypeHint}
+          />
         </div>
       ) : null}
     </section>

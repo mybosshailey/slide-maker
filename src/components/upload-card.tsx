@@ -2,7 +2,8 @@
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { UploadResponse } from "@/features/upload/types";
+import { questionTypeOptions } from "@/features/problem-parse/question-options";
+import type { QuestionTypeHint, UploadResponse } from "@/features/upload/types";
 
 type UploadState = "idle" | "uploading" | "success" | "error";
 
@@ -12,6 +13,7 @@ export function UploadCard() {
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [questionTypeHint, setQuestionTypeHint] = useState<QuestionTypeHint>("auto");
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [serverFile, setServerFile] = useState<UploadResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export function UploadCard() {
 
     const formData = new FormData();
     formData.append("image", selectedFile);
+    formData.append("questionTypeHint", questionTypeHint);
 
     try {
       setUploadState("uploading");
@@ -94,7 +97,7 @@ export function UploadCard() {
       router.push(
         `/result/${encodeURIComponent(payload.fileName)}?originalName=${encodeURIComponent(
           payload.originalName
-        )}&size=${payload.size}`
+        )}&size=${payload.size}&questionTypeHint=${payload.questionTypeHint}`
       );
     } catch (error) {
       setUploadState("error");
@@ -130,6 +133,28 @@ export function UploadCard() {
         <div className="preview-panel">
           <div className="preview-frame">
             <img alt="Uploaded preview" className="preview-image" src={previewUrl} />
+          </div>
+          <div className="hint-field">
+            <label className="hint-label" htmlFor="question-type-hint">
+              Problem type
+            </label>
+            <select
+              id="question-type-hint"
+              className="hint-select"
+              value={questionTypeHint}
+              onChange={(event) =>
+                setQuestionTypeHint(event.target.value as QuestionTypeHint)
+              }
+            >
+              {questionTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <p className="meta-label">
+              자동 감지가 애매한 경우 직접 선택하면 문제 분리 정확도를 높일 수 있어요.
+            </p>
           </div>
           <div className="preview-meta">
             <div>

@@ -118,6 +118,26 @@ input {
   padding: 1rem;
 }
 
+.hint-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.hint-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.hint-select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+}
+
 .result-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
