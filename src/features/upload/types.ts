@@ -80,3 +80,27 @@ export type AnalysisResult = {
   sections: AnalysisSection[];
   provider: "openai" | "mock";
 };
+
+export type SlideDraftSlide = {
+  id: string;
+  kind: "passage" | "choices";
+  title: string;
+  background: "#000000";
+  color: "#ffffff";
+  widthRatio: number;
+  content: string[];
+};
+
+export type SlideDraft = {
+  fileId: string;
+  title: string;
+  slides: SlideDraftSlide[];
+  provider: "rule-based";
+};
+
+export type LessonGenerationResult = {
+  ocrResult: OCRResult;
+  parseResult: ProblemParseResult;
+  analysisResult: AnalysisResult;
+  slideDraft: SlideDraft;
+};

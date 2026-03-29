@@ -1,4 +1,4 @@
-import { OCRPanel } from "@/components/ocr-panel";
+import { LessonGeneratorPanel } from "@/components/lesson-generator-panel";
 import type { QuestionTypeHint } from "@/features/upload/types";
 
 type ResultPageProps = {
@@ -78,7 +78,10 @@ export default async function ResultPage({
         </aside>
       </section>
 
-      <OCRPanel fileId={fileName} questionTypeHint={questionTypeHint ?? "auto"} />
+      <LessonGeneratorPanel
+        fileId={fileName}
+        questionTypeHint={questionTypeHint ?? "auto"}
+      />
     </main>
   );
 }

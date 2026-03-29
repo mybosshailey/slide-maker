@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SlideDraftPanel } from "@/components/slide-draft-panel";
 import type { AnalysisResult, ProblemParseResult } from "@/features/upload/types";
 
 type AnalysisPanelProps = {
@@ -89,6 +90,10 @@ export function AnalysisPanel({ parseResult }: AnalysisPanelProps) {
               </article>
             ))}
           </div>
+          <SlideDraftPanel
+            parseResult={parseResult}
+            analysisResult={analysisResult}
+          />
         </div>
       ) : null}
     </section>

@@ -22,7 +22,7 @@ export function UploadCard() {
     if (uploadState === "uploading") return "Uploading image...";
     if (uploadState === "success") return "Upload complete. Preview is ready.";
     if (uploadState === "error") return errorMessage ?? "Upload failed.";
-    return "Drop a JPG or PNG file here, or choose one from your device.";
+    return "Drop a JPG or PNG file here.";
   }, [errorMessage, uploadState]);
 
   function handleFile(file: File | null) {
@@ -125,8 +125,12 @@ export function UploadCard() {
           accept="image/png,image/jpeg"
           onChange={onInputChange}
         />
-        <p className="dropzone-title">Drag and drop your passage image</p>
-        <p className="dropzone-copy">{helperText}</p>
+        <div className="dropzone-shell">
+          <div>
+            <p className="dropzone-title">Drag and drop your passage image</p>
+            <p className="dropzone-copy">{helperText}</p>
+          </div>
+        </div>
       </div>
 
       {previewUrl ? (
@@ -134,41 +138,43 @@ export function UploadCard() {
           <div className="preview-frame">
             <img alt="Uploaded preview" className="preview-image" src={previewUrl} />
           </div>
-          <div className="hint-field">
-            <label className="hint-label" htmlFor="question-type-hint">
-              Problem type
-            </label>
-            <select
-              id="question-type-hint"
-              className="hint-select"
-              value={questionTypeHint}
-              onChange={(event) =>
-                setQuestionTypeHint(event.target.value as QuestionTypeHint)
-              }
-            >
-              {questionTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <p className="meta-label">
-              자동 감지가 애매한 경우 직접 선택하면 문제 분리 정확도를 높일 수 있어요.
-            </p>
-          </div>
-          <div className="preview-meta">
-            <div>
-              <p className="meta-label">Selected file</p>
-              <p className="meta-value">{selectedFile?.name}</p>
+          <div className="preview-grid">
+            <div className="hint-field">
+              <label className="hint-label" htmlFor="question-type-hint">
+                Problem type
+              </label>
+              <select
+                id="question-type-hint"
+                className="hint-select"
+                value={questionTypeHint}
+                onChange={(event) =>
+                  setQuestionTypeHint(event.target.value as QuestionTypeHint)
+                }
+              >
+                {questionTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="meta-label">
+                자동 감지가 애매한 경우 직접 선택하면 문제 분리 정확도를 높일 수 있어요.
+              </p>
             </div>
-            <button
-              className="primary-button"
-              onClick={uploadSelectedFile}
-              type="button"
-              disabled={uploadState === "uploading"}
-            >
-              {uploadState === "uploading" ? "Uploading..." : "Upload image"}
-            </button>
+            <div className="preview-meta">
+              <div className="file-chip">
+                <p className="meta-label">Selected file</p>
+                <p className="meta-value">{selectedFile?.name}</p>
+              </div>
+              <button
+                className="primary-button"
+                onClick={uploadSelectedFile}
+                type="button"
+                disabled={uploadState === "uploading"}
+              >
+                {uploadState === "uploading" ? "Uploading..." : "Upload image"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
