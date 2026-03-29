@@ -367,6 +367,11 @@ select {
   margin-top: 1rem;
 }
 
+.slide-draft-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .slide-preview-card {
   border-radius: 18px;
   overflow: hidden;

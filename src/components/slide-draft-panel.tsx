@@ -18,6 +18,7 @@ export function SlideDraftPanel({
 }: SlideDraftPanelProps) {
   const [slideDraft, setSlideDraft] = useState<SlideDraft | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleGenerateDraft() {
@@ -49,6 +50,44 @@ export function SlideDraftPanel({
     }
   }
 
+  async function handleExportPpt() {
+    if (!slideDraft) {
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      setErrorMessage(null);
+
+      const response = await fetch("/api/export-ppt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ slideDraft })
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        throw new Error(payload.error ?? "PPT export failed.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${slideDraft.title || "lesson-draft"}.pptx`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unexpected export error."
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   return (
     <section className="status-panel analysis-panel">
       <div className="ocr-header">
@@ -73,6 +112,16 @@ export function SlideDraftPanel({
 
       {slideDraft ? (
         <div className="slide-draft-stack">
+          <div className="slide-draft-actions">
+            <button
+              className="primary-button"
+              onClick={handleExportPpt}
+              type="button"
+              disabled={isExporting}
+            >
+              {isExporting ? "Exporting..." : "Download PPTX"}
+            </button>
+          </div>
           {slideDraft.slides.map((slide) => (
             <article className="slide-preview-card" key={slide.id}>
               <div
