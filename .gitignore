@@ -1,6 +1,7 @@
 .next
 node_modules
 uploads
+tmp
 dist
 .DS_Store
 .env
