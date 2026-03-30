@@ -81,7 +81,11 @@ export function LessonGeneratorPanel({
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `${result.slideDraft.title || "lesson-draft"}.pptx`;
+      const fileName =
+        result.slideDraft.coverMetadata?.examTitle ||
+        result.slideDraft.title ||
+        "lesson-draft";
+      anchor.download = `${fileName}.pptx`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();

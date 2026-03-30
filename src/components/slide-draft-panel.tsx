@@ -76,7 +76,8 @@ export function SlideDraftPanel({
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `${slideDraft.title || "lesson-draft"}.pptx`;
+      const fileName = slideDraft.coverMetadata?.examTitle || slideDraft.title || "lesson-draft";
+      anchor.download = `${fileName}.pptx`;
       anchor.click();
       URL.revokeObjectURL(url);
     } catch (error) {

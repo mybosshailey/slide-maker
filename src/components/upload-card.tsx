@@ -13,6 +13,7 @@ type UploadState = "idle" | "uploading" | "success" | "error";
 
 export function UploadCard() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const itemNumberEditedRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -23,6 +24,7 @@ export function UploadCard() {
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [serverFile, setServerFile] = useState<UploadResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDetectingItemNumber, setIsDetectingItemNumber] = useState(false);
 
   const helperText = useMemo(() => {
     if (uploadState === "uploading") return "Preparing your PPTX...";
@@ -30,6 +32,32 @@ export function UploadCard() {
     if (uploadState === "error") return errorMessage ?? "Upload failed.";
     return "Drop a JPG or PNG file here.";
   }, [errorMessage, uploadState]);
+
+  async function detectItemNumber(file: File) {
+    try {
+      setIsDetectingItemNumber(true);
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch("/api/detect-item-number", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = (await response.json()) as { itemNumber?: string | null };
+
+      if (!itemNumberEditedRef.current && payload.itemNumber) {
+        setItemNumber(payload.itemNumber);
+      }
+    } finally {
+      setIsDetectingItemNumber(false);
+    }
+  }
 
   function handleFile(file: File | null) {
     if (!file) return;
@@ -47,9 +75,13 @@ export function UploadCard() {
     const nextPreviewUrl = URL.createObjectURL(file);
     setPreviewUrl(nextPreviewUrl);
     setSelectedFile(file);
+    itemNumberEditedRef.current = false;
+    setItemNumber("");
     setServerFile(null);
     setUploadState("idle");
     setErrorMessage(null);
+
+    void detectItemNumber(file);
   }
 
   function onInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -142,7 +174,11 @@ export function UploadCard() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `${lessonPayload.slideDraft.title || "lesson-draft"}.pptx`;
+      const fileName =
+        lessonPayload.slideDraft.coverMetadata?.examTitle ||
+        lessonPayload.slideDraft.title ||
+        "lesson-draft";
+      anchor.download = `${fileName}.pptx`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -210,13 +246,19 @@ export function UploadCard() {
                 className="hint-select"
                 value={itemNumber}
                 onChange={(event) =>
-                  setItemNumber(event.target.value.replace(/[^0-9]/g, ""))
+                  {
+                    itemNumberEditedRef.current = true;
+                    setItemNumber(event.target.value.replace(/[^0-9]/g, ""));
+                  }
                 }
                 onClick={(event) => event.stopPropagation()}
                 type="text"
                 inputMode="numeric"
                 placeholder="34"
               />
+              {isDetectingItemNumber ? (
+                <p className="meta-label">문항 번호를 자동 인식하는 중...</p>
+              ) : null}
               <label className="hint-label" htmlFor="instructor-name">
                 강사명
               </label>
@@ -246,9 +288,6 @@ export function UploadCard() {
                   </option>
                 ))}
               </select>
-              <p className="meta-label">
-                과목은 영어 영역으로 고정됩니다. 번호는 숫자만 입력하면 PPT에서 `번`이 붙습니다.
-              </p>
             </div>
             <div className="preview-meta">
               <div className="file-chip">

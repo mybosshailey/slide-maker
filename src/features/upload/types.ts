@@ -13,6 +13,11 @@ export type OCRResult = {
   fileId: string;
   rawText: string;
   paragraphs: string[];
+  itemNumber?: string;
+  instruction?: string;
+  passageText?: string;
+  glossaryNotes?: string[];
+  choices?: ChoiceItem[];
   provider: "openai" | "mock";
 };
 
@@ -63,6 +68,7 @@ export type ProblemParseResult = {
   passage: string;
   passageBlocks: PassageBlock[];
   choices: ChoiceItem[];
+  glossaryNotes?: string[];
   promptBox?: string;
   summaryText?: string;
   provider: "rule-based";

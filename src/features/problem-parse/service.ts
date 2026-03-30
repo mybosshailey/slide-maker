@@ -23,12 +23,22 @@ function findQuestionPattern(text: string) {
   return questionPatterns.find((pattern) => text.includes(pattern.stem));
 }
 
+function normalizeChoiceLabels(text: string) {
+  return text
+    .replace(/\b1[\.\)]\s*/g, "① ")
+    .replace(/\b2[\.\)]\s*/g, "② ")
+    .replace(/\b3[\.\)]\s*/g, "③ ")
+    .replace(/\b4[\.\)]\s*/g, "④ ")
+    .replace(/\b5[\.\)]\s*/g, "⑤ ");
+}
+
 function splitChoices(text: string) {
-  const matches = [...text.matchAll(/([①②③④⑤])\s*/g)];
+  const normalized = normalizeChoiceLabels(text);
+  const matches = [...normalized.matchAll(/([①②③④⑤])\s*/g)];
 
   if (matches.length < 3) {
     return {
-      passageText: text.trim(),
+      passageText: normalized.trim(),
       choices: [] as ChoiceItem[]
     };
   }
@@ -37,13 +47,13 @@ function splitChoices(text: string) {
 
   if (firstChoiceIndex < 0) {
     return {
-      passageText: text.trim(),
+      passageText: normalized.trim(),
       choices: [] as ChoiceItem[]
     };
   }
 
-  const passageText = text.slice(0, firstChoiceIndex).trim();
-  const choiceArea = text.slice(firstChoiceIndex);
+  const passageText = normalized.slice(0, firstChoiceIndex).trim();
+  const choiceArea = normalized.slice(firstChoiceIndex);
   const chunks = choiceArea
     .split(/(?=[①②③④⑤]\s*)/g)
     .map((chunk) => chunk.trim())
@@ -53,7 +63,7 @@ function splitChoices(text: string) {
     const label = chunk[0] ?? "";
     return {
       label,
-      text: chunk.slice(1).trim()
+      text: chunk.slice(1).replace(/\s+/g, " ").trim()
     };
   });
 
@@ -142,7 +152,7 @@ export function parseProblemFromOCR(
   ocrResult: OCRResult,
   questionTypeHint: QuestionTypeHint
 ): ProblemParseResult {
-  const itemNumber = extractItemNumber(ocrResult.rawText);
+  const itemNumber = ocrResult.itemNumber || extractItemNumber(ocrResult.rawText);
   const textWithoutNumber = removeItemNumber(ocrResult.rawText);
   const pattern = findQuestionPattern(textWithoutNumber);
 
@@ -153,7 +163,9 @@ export function parseProblemFromOCR(
   let choicePlacement: ProblemParseResult["choicePlacement"] = "separate";
   let bodyText = textWithoutNumber;
 
-  if (pattern) {
+  if (ocrResult.instruction?.trim()) {
+    instruction = ocrResult.instruction.trim();
+  } else if (pattern) {
     instruction = pattern.stem;
     choicePlacement = pattern.choicePlacement;
     bodyText = textWithoutNumber.split(pattern.stem).slice(1).join(pattern.stem).trim();
@@ -163,7 +175,15 @@ export function parseProblemFromOCR(
     instruction = questionTypeStemMap[questionTypeHint] ?? instruction;
   }
 
-  const { passageText, choices } = splitChoices(bodyText);
+  const structuredChoices = ocrResult.choices?.filter((choice) => choice.text.trim()) ?? [];
+  const structuredPassageText = ocrResult.passageText?.trim();
+  const { passageText, choices } =
+    structuredPassageText || structuredChoices.length
+      ? {
+          passageText: structuredPassageText || bodyText.trim(),
+          choices: structuredChoices
+        }
+      : splitChoices(bodyText);
   const passageBlocks = buildPassageBlocks(questionType, passageText);
 
   return {
@@ -177,6 +197,7 @@ export function parseProblemFromOCR(
     passage: passageText,
     passageBlocks,
     choices,
+    glossaryNotes: ocrResult.glossaryNotes,
     promptBox: detectPromptBox(questionType, passageText),
     summaryText: detectSummaryText(questionType, passageText),
     provider: "rule-based"

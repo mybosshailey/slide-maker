@@ -52,11 +52,21 @@ function extractGlossaryNotes(text: string) {
   return { cleanedText, notes };
 }
 
+function normalizeProvidedNotes(notes?: string[]) {
+  return (notes ?? [])
+    .map((note) => note.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .map((note) => ({
+      text: note,
+      keyword: note.replace(/^\*+\s*/, "").split(":")[0]?.trim().toLowerCase() ?? ""
+    }));
+}
+
 function compactPassageBlocks(parseResult: ProblemParseResult) {
   return parseResult.passageBlocks
     .map((block) => {
       if (block.kind === "blank") {
-        return "_____";
+        return "____________________";
       }
 
       if (block.marker) {
@@ -116,9 +126,11 @@ function formatChoiceLines(parseResult: ProblemParseResult) {
     return ["No separate choices detected."];
   }
 
-  return parseResult.choices.map((choice) =>
-    choice.label ? `${choice.label} ${choice.text}` : choice.text
-  );
+  return parseResult.choices.map((choice, index) => {
+    const fallbackLabel = ["①", "②", "③", "④", "⑤"][index] ?? "";
+    const label = choice.label || fallbackLabel;
+    return label ? `${label} ${choice.text}` : choice.text;
+  });
 }
 
 function pickNotesForText(text: string, notes: GlossaryNote[]) {
@@ -199,7 +211,9 @@ export function generateSlideDraft(
     : "";
   const headerText = formatInstructionHeader(parseResult, normalizedCoverMetadata);
   const sourcePassage = compactPassageBlocks(parseResult);
-  const { cleanedText, notes } = extractGlossaryNotes(sourcePassage);
+  const ocrNotes = normalizeProvidedNotes(parseResult.glossaryNotes);
+  const { cleanedText, notes: inferredNotes } = extractGlossaryNotes(sourcePassage);
+  const notes = ocrNotes.length ? ocrNotes : inferredNotes;
   const passageSlides = buildPassageSlides(
     parseResult,
     headerText,

@@ -13,15 +13,24 @@ export async function POST(request: Request) {
 
   try {
     const buffer = await exportSlideDraftToPptx(body.slideDraft);
-    const fileName = `${body.slideDraft.title || "lesson-draft"}.pptx`
-      .replace(/[^a-zA-Z0-9._-]/g, "-")
-      .toLowerCase();
+    const baseName =
+      body.slideDraft.coverMetadata?.examTitle?.trim() ||
+      body.slideDraft.title ||
+      "lesson-draft";
+    const sanitizedBaseName = baseName.replace(/[\\/:*?"<>|]/g, "-");
+    const asciiFallback =
+      sanitizedBaseName
+        .replace(/[^\x20-\x7E]/g, "-")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "") || "lesson-draft";
+    const encodedFileName = encodeURIComponent(`${sanitizedBaseName}.pptx`);
 
     return new NextResponse(buffer, {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Content-Disposition": `attachment; filename="${asciiFallback}.pptx"; filename*=UTF-8''${encodedFileName}`,
         "Cache-Control": "no-store"
       }
     });

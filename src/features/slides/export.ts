@@ -1,7 +1,16 @@
 import PptxGenJS from "pptxgenjs";
 import type { SlideDraft, SlideDraftSlide } from "@/features/upload/types";
 
-const FONT_FACE = "Apple SD Gothic Neo";
+const FONT_FACE = "Calibri";
+const COVER_FONT_FACE = "Helvetica";
+
+function indentFirstParagraph(text: string) {
+  if (!text.trim()) {
+    return text;
+  }
+
+  return `\u2003\u2003${text}`;
+}
 
 function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
   const { coverMetadata } = slideDraft;
@@ -12,32 +21,36 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
     w: 10.8,
     h: 0.7,
     color: "FFFFFF",
-    fontFace: FONT_FACE,
-    fontSize: 26,
+    fontFace: COVER_FONT_FACE,
+    fontSize: 35,
     bold: true,
     margin: 0,
     align: "left"
   });
 
-  slide.addShape(PptxGenJS.ShapeType.line, {
+  slide.addShape("rect", {
     x: 0.28,
     y: 2.78,
     w: 8.95,
-    h: 0,
+    h: 0.02,
+    fill: {
+      color: "E6C400"
+    },
     line: {
       color: "E6C400",
-      pt: 1.2
+      transparency: 100,
+      pt: 0
     }
   });
 
   slide.addText(coverMetadata.subjectLabel, {
     x: 3.1,
     y: 3.0,
-    w: 2.2,
+    w: 2.5,
     h: 0.5,
     color: "FFFFFF",
-    fontFace: FONT_FACE,
-    fontSize: 22,
+    fontFace: COVER_FONT_FACE,
+    fontSize: 33,
     bold: true,
     margin: 0,
     align: "center"
@@ -46,13 +59,13 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
   slide.addText(
     coverMetadata.itemNumber ? `${coverMetadata.itemNumber}번` : "",
     {
-      x: 4.95,
+      x: 5.45,
       y: 3.0,
       w: 1.6,
       h: 0.5,
       color: "FFF200",
-      fontFace: FONT_FACE,
-      fontSize: 22,
+      fontFace: COVER_FONT_FACE,
+      fontSize: 33,
       bold: true,
       margin: 0,
       align: "left"
@@ -65,8 +78,8 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
     w: 2.8,
     h: 0.5,
     color: "FFFFFF",
-    fontFace: FONT_FACE,
-    fontSize: 22,
+    fontFace: COVER_FONT_FACE,
+    fontSize: 36,
     bold: true,
     margin: 0,
     align: "center"
@@ -81,89 +94,89 @@ function addHeader(slide: PptxGenJS.Slide, headerText: string) {
     h: 0.4,
     color: "FFFFFF",
     fontFace: FONT_FACE,
-    fontSize: 18,
-    bold: true,
+    fontSize: 24,
+    bold: false,
     margin: 0
   });
 }
 
-function addFooterNotes(slide: PptxGenJS.Slide, footerNotes?: string[]) {
+function addFooterNotes(
+  slide: PptxGenJS.Slide,
+  slideItem: SlideDraftSlide,
+  footerNotes?: string[]
+) {
   if (!footerNotes?.length) {
     return;
   }
 
+  const isFullPassage = slideItem.kind === "passage-full";
+  const passageRightEdge = isFullPassage ? 10.98 : 9.63;
+  const footerWidth = isFullPassage ? 10.0 : 9.0;
+
   slide.addText(footerNotes.join("   "), {
-    x: 4.65,
-    y: 6.45,
-    w: 8.2,
-    h: 0.24,
+    x: passageRightEdge - footerWidth,
+    y: isFullPassage ? 6.43 : 6.32,
+    w: footerWidth,
+    h: isFullPassage ? 0.32 : 0.32,
     color: "FFFFFF",
     fontFace: FONT_FACE,
-    fontSize: 8.5,
-    bold: true,
+    fontSize: isFullPassage ? 17 : 18,
+    bold: false,
     margin: 0,
-    align: "right"
+    align: "right",
+    fit: "shrink",
+    breakLine: false
   });
 }
 
 function addPassageSlide(slide: PptxGenJS.Slide, slideItem: SlideDraftSlide) {
   addHeader(slide, slideItem.headerText || slideItem.title);
+  const isFullPassage = slideItem.kind === "passage-full";
+  const isSecondPassageSlide = slideItem.id.endsWith("-passage-2");
+  const shouldIndentFirstParagraph = isFullPassage || !isSecondPassageSlide;
+  const rawContentText = slideItem.content.join("\n");
+  const contentText = shouldIndentFirstParagraph
+    ? indentFirstParagraph(rawContentText)
+    : rawContentText;
 
-  slide.addText(slideItem.content.join("\n"), {
-    x: 0.48,
-    y: 0.56,
-    w: slideItem.kind === "passage-full" ? 11.1 : 10.65,
-    h: slideItem.kind === "passage-full" ? 5.9 : 5.35,
+  slide.addText(contentText, {
+    x: isFullPassage ? 0.18 : 0.38,
+    y: isFullPassage ? 0.64 : 0.64,
+    w: isFullPassage ? 10.8 : 9.25,
+    h: isFullPassage ? 6.0 : 4.95,
     color: "FFFFFF",
     fontFace: FONT_FACE,
-    fontSize: slideItem.kind === "passage-full" ? 15 : 19.5,
-    bold: true,
+    fontSize: isFullPassage ? 22 : 24,
+    bold: false,
+    align: "justify",
     fit: "shrink",
     breakLine: false,
-    margin: 0,
+    margin: isFullPassage ? 0.02 : 0.02,
     valign: "top",
-    paraSpaceAfter: slideItem.kind === "passage-full" ? 5 : 8
+    lineSpacingMultiple: 1.5,
+    paraSpaceBefore: 0,
+    paraSpaceAfter: 0
   });
 
-  addFooterNotes(slide, slideItem.footerNotes);
+  addFooterNotes(slide, slideItem, slideItem.footerNotes);
 }
 
 function addChoicesSlide(slide: PptxGenJS.Slide, slideItem: SlideDraftSlide) {
   addHeader(slide, slideItem.headerText || slideItem.title);
 
-  const choiceRuns: PptxGenJS.TextProps[] = [];
-
-  slideItem.content.forEach((choice, index) => {
-    choiceRuns.push({
-      text: choice,
-      options: {
-        breakLine: true,
-        color: "FFFFFF",
-        fontFace: FONT_FACE,
-        fontSize: 22,
-        bold: true
-      }
-    });
-
-    if (index < slideItem.content.length - 1) {
-      choiceRuns.push({
-        text: "",
-        options: {
-          breakLine: true,
-          fontSize: 8
-        }
-      });
-    }
-  });
-
-  slide.addText(choiceRuns, {
+  slide.addText(slideItem.content.join("\n\n"), {
     x: 0.62,
     y: 1.1,
     w: 11.2,
     h: 4.95,
+    color: "FFFFFF",
+    fontFace: FONT_FACE,
+    fontSize: 22.5,
+    bold: false,
     margin: 0,
     fit: "shrink",
-    valign: "top"
+    valign: "top",
+    paraSpaceAfter: 4.5
   });
 }
 
