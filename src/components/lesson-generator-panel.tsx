@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type {
   LessonGenerationResult,
   QuestionTypeHint
@@ -17,6 +17,7 @@ export function LessonGeneratorPanel({
 }: LessonGeneratorPanelProps) {
   const [result, setResult] = useState<LessonGenerationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleGenerate() {
@@ -50,26 +51,81 @@ export function LessonGeneratorPanel({
     }
   }
 
+  useEffect(() => {
+    void handleGenerate();
+  }, []);
+
+  async function handleExportPpt() {
+    if (!result?.slideDraft) {
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      setErrorMessage(null);
+
+      const response = await fetch("/api/export-ppt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ slideDraft: result.slideDraft })
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        throw new Error(payload.error ?? "PPT export failed.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${result.slideDraft.title || "lesson-draft"}.pptx`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unexpected export error."
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   return (
     <section className="status-panel generator-panel">
       <div className="generator-header">
         <div>
-          <p className="status-title">Generate slides</p>
+          <p className="status-title">Lesson draft</p>
           <p className="status-copy">
-            Upload is done. Generate the passage slide and choices slide in one step.
+            Upload is done. Your lesson draft is generated automatically.
           </p>
         </div>
         <button
           className="primary-button"
-          onClick={handleGenerate}
+          onClick={handleExportPpt}
           type="button"
-          disabled={isLoading}
+          disabled={!result || isExporting || isLoading}
         >
-          {isLoading ? "Generating..." : "Generate lesson"}
+          {isExporting
+            ? "Exporting..."
+            : result
+              ? "Download PPTX"
+              : "Preparing PPTX..."}
         </button>
       </div>
 
       {errorMessage ? <p className="error-text">{errorMessage}</p> : null}
+
+      {!result && isLoading ? (
+        <div className="generation-loading">
+          <p className="meta-label">Generating</p>
+          <p className="meta-value">Building your two-slide lesson draft...</p>
+        </div>
+      ) : null}
 
       {result ? (
         <div className="generator-result">

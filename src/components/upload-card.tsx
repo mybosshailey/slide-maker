@@ -1,14 +1,16 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { questionTypeOptions } from "@/features/problem-parse/question-options";
-import type { QuestionTypeHint, UploadResponse } from "@/features/upload/types";
+import type {
+  LessonGenerationResult,
+  QuestionTypeHint,
+  UploadResponse
+} from "@/features/upload/types";
 
 type UploadState = "idle" | "uploading" | "success" | "error";
 
 export function UploadCard() {
-  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -19,8 +21,8 @@ export function UploadCard() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const helperText = useMemo(() => {
-    if (uploadState === "uploading") return "Uploading image...";
-    if (uploadState === "success") return "Upload complete. Preview is ready.";
+    if (uploadState === "uploading") return "Preparing your PPTX...";
+    if (uploadState === "success") return "Your PPTX is ready.";
     if (uploadState === "error") return errorMessage ?? "Upload failed.";
     return "Drop a JPG or PNG file here.";
   }, [errorMessage, uploadState]);
@@ -91,14 +93,54 @@ export function UploadCard() {
         throw new Error(payload.error ?? "Upload failed.");
       }
 
-      const payload = (await response.json()) as UploadResponse;
-      setServerFile(payload);
+      const uploadPayload = (await response.json()) as UploadResponse;
+      setServerFile(uploadPayload);
+
+      const lessonResponse = await fetch("/api/generate-lesson", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fileId: uploadPayload.fileId,
+          questionTypeHint: uploadPayload.questionTypeHint
+        })
+      });
+
+      const lessonPayload = (await lessonResponse.json()) as LessonGenerationResult & {
+        error?: string;
+      };
+
+      if (!lessonResponse.ok) {
+        throw new Error(lessonPayload.error ?? "Lesson generation failed.");
+      }
+
+      const exportResponse = await fetch("/api/export-ppt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          slideDraft: lessonPayload.slideDraft
+        })
+      });
+
+      if (!exportResponse.ok) {
+        const payload = (await exportResponse.json()) as { error?: string };
+        throw new Error(payload.error ?? "PPT export failed.");
+      }
+
+      const blob = await exportResponse.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${lessonPayload.slideDraft.title || "lesson-draft"}.pptx`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+
       setUploadState("success");
-      router.push(
-        `/result/${encodeURIComponent(payload.fileName)}?originalName=${encodeURIComponent(
-          payload.originalName
-        )}&size=${payload.size}&questionTypeHint=${payload.questionTypeHint}`
-      );
     } catch (error) {
       setUploadState("error");
       setErrorMessage(
@@ -167,12 +209,12 @@ export function UploadCard() {
                 <p className="meta-value">{selectedFile?.name}</p>
               </div>
               <button
-                className="primary-button"
-                onClick={uploadSelectedFile}
-                type="button"
-                disabled={uploadState === "uploading"}
-              >
-                {uploadState === "uploading" ? "Uploading..." : "Upload image"}
+              className="primary-button"
+              onClick={uploadSelectedFile}
+              type="button"
+              disabled={uploadState === "uploading"}
+            >
+                {uploadState === "uploading" ? "Preparing PPTX..." : "Download PPTX"}
               </button>
             </div>
           </div>
@@ -181,10 +223,9 @@ export function UploadCard() {
 
       {serverFile ? (
         <div className="status-panel">
-          <p className="status-title">Upload saved</p>
+          <p className="status-title">PPTX prepared</p>
           <p className="status-copy">
-            {serverFile.originalName} is now stored through the API route and ready
-            for the OCR step.
+            {serverFile.originalName} has been uploaded and turned into a lesson file.
           </p>
         </div>
       ) : null}
