@@ -1,6 +1,5 @@
-import { mkdir, writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
-import { getSafeFileName, getUploadPath, uploadDir } from "@/lib/upload-storage";
+import { getSafeFileName, saveUpload } from "@/lib/upload-storage";
 import type { CoverMetadata } from "@/features/upload/types";
 
 export async function POST(request: Request) {
@@ -29,9 +28,7 @@ export async function POST(request: Request) {
   const buffer = Buffer.from(bytes);
   const safeName = getSafeFileName(image.name);
   const fileName = `${Date.now()}-${safeName}`;
-
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(getUploadPath(fileName), buffer);
+  const savedUpload = await saveUpload(fileName, buffer, image.type);
 
   const coverMetadata: CoverMetadata = {
     examTitle:
@@ -50,12 +47,12 @@ export async function POST(request: Request) {
   };
 
   return NextResponse.json({
-    fileId: fileName,
-    fileName,
+    fileId: savedUpload.fileId,
+    fileName: savedUpload.fileId,
     originalName: image.name,
     mimeType: image.type,
     size: image.size,
-    previewUrl: `/api/uploads/${encodeURIComponent(fileName)}`,
+    previewUrl: savedUpload.previewUrl,
     questionTypeHint:
       typeof questionTypeHint === "string" ? questionTypeHint : "auto",
     coverMetadata

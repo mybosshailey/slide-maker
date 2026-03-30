@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/blob": "^2.3.2",
     "next": "15.2.4",
     "pptxgenjs": "^4.0.1",
     "react": "19.0.0",
