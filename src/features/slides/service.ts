@@ -11,9 +11,14 @@ type GlossaryNote = {
   text: string;
 };
 
-function formatInstructionHeader(parseResult: ProblemParseResult) {
-  if (parseResult.itemNumber) {
-    return `${parseResult.itemNumber}. ${parseResult.instruction}`;
+function formatInstructionHeader(
+  parseResult: ProblemParseResult,
+  coverMetadata?: CoverMetadata
+) {
+  const itemNumber = coverMetadata?.itemNumber || parseResult.itemNumber;
+
+  if (itemNumber) {
+    return `${itemNumber}. ${parseResult.instruction}`;
   }
 
   return parseResult.instruction;
@@ -192,7 +197,7 @@ export function generateSlideDraft(
   const itemNumberText = normalizedCoverMetadata.itemNumber
     ? `${normalizedCoverMetadata.itemNumber}번`
     : "";
-  const headerText = formatInstructionHeader(parseResult);
+  const headerText = formatInstructionHeader(parseResult, normalizedCoverMetadata);
   const sourcePassage = compactPassageBlocks(parseResult);
   const { cleanedText, notes } = extractGlossaryNotes(sourcePassage);
   const passageSlides = buildPassageSlides(

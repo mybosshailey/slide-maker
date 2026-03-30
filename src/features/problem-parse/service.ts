@@ -1,4 +1,7 @@
-import { questionPatterns } from "@/features/problem-parse/config";
+import {
+  questionPatterns,
+  questionTypeStemMap
+} from "@/features/problem-parse/config";
 import type {
   ChoiceItem,
   OCRResult,
@@ -154,6 +157,10 @@ export function parseProblemFromOCR(
     instruction = pattern.stem;
     choicePlacement = pattern.choicePlacement;
     bodyText = textWithoutNumber.split(pattern.stem).slice(1).join(pattern.stem).trim();
+  }
+
+  if (questionTypeHint !== "auto" && questionTypeStemMap[questionTypeHint]) {
+    instruction = questionTypeStemMap[questionTypeHint] ?? instruction;
   }
 
   const { passageText, choices } = splitChoices(bodyText);

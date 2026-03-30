@@ -8,7 +8,7 @@ export const questionTypeOptions: Array<{
   { value: "purpose", label: "목적" },
   { value: "emotion-change", label: "심경" },
   { value: "claim", label: "주장" },
-  { value: "underline-meaning", label: "함축" },
+  { value: "underline-meaning", label: "함의" },
   { value: "gist", label: "요지" },
   { value: "topic", label: "주제" },
   { value: "title", label: "제목" },

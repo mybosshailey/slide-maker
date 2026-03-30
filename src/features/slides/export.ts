@@ -76,12 +76,12 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
 function addHeader(slide: PptxGenJS.Slide, headerText: string) {
   slide.addText(headerText, {
     x: 0.18,
-    y: 0.14,
-    w: 9.5,
-    h: 0.42,
+    y: 0.12,
+    w: 10.9,
+    h: 0.4,
     color: "FFFFFF",
     fontFace: FONT_FACE,
-    fontSize: 19,
+    fontSize: 18,
     bold: true,
     margin: 0
   });
@@ -93,13 +93,13 @@ function addFooterNotes(slide: PptxGenJS.Slide, footerNotes?: string[]) {
   }
 
   slide.addText(footerNotes.join("   "), {
-    x: 5.1,
-    y: 6.55,
-    w: 7.8,
-    h: 0.28,
+    x: 4.65,
+    y: 6.45,
+    w: 8.2,
+    h: 0.24,
     color: "FFFFFF",
     fontFace: FONT_FACE,
-    fontSize: 9.5,
+    fontSize: 8.5,
     bold: true,
     margin: 0,
     align: "right"
@@ -110,19 +110,19 @@ function addPassageSlide(slide: PptxGenJS.Slide, slideItem: SlideDraftSlide) {
   addHeader(slide, slideItem.headerText || slideItem.title);
 
   slide.addText(slideItem.content.join("\n"), {
-    x: 0.66,
-    y: 0.62,
-    w: 10.55,
-    h: slideItem.kind === "passage-full" ? 5.95 : 5.45,
+    x: 0.48,
+    y: 0.56,
+    w: slideItem.kind === "passage-full" ? 11.1 : 10.65,
+    h: slideItem.kind === "passage-full" ? 5.9 : 5.35,
     color: "FFFFFF",
     fontFace: FONT_FACE,
-    fontSize: slideItem.kind === "passage-full" ? 16.5 : 22,
+    fontSize: slideItem.kind === "passage-full" ? 15 : 19.5,
     bold: true,
     fit: "shrink",
     breakLine: false,
     margin: 0,
     valign: "top",
-    paraSpaceAfter: 10
+    paraSpaceAfter: slideItem.kind === "passage-full" ? 5 : 8
   });
 
   addFooterNotes(slide, slideItem.footerNotes);
@@ -157,10 +157,10 @@ function addChoicesSlide(slide: PptxGenJS.Slide, slideItem: SlideDraftSlide) {
   });
 
   slide.addText(choiceRuns, {
-    x: 0.38,
-    y: 1.25,
-    w: 11.9,
-    h: 4.9,
+    x: 0.62,
+    y: 1.1,
+    w: 11.2,
+    h: 4.95,
     margin: 0,
     fit: "shrink",
     valign: "top"
