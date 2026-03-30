@@ -91,13 +91,15 @@ export type CoverMetadata = {
 
 export type SlideDraftSlide = {
   id: string;
-  kind: "cover" | "passage" | "choices";
+  kind: "cover" | "passage-split" | "passage-full" | "choices";
   title: string;
+  headerText?: string;
   background: "#000000";
   color: "#ffffff";
   widthRatio: number;
   content: string[];
   accentText?: string;
+  footerNotes?: string[];
 };
 
 export type SlideDraft = {

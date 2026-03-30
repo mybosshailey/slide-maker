@@ -1,5 +1,7 @@
 import PptxGenJS from "pptxgenjs";
-import type { SlideDraft } from "@/features/upload/types";
+import type { SlideDraft, SlideDraftSlide } from "@/features/upload/types";
+
+const FONT_FACE = "Apple SD Gothic Neo";
 
 function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
   const { coverMetadata } = slideDraft;
@@ -10,7 +12,7 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
     w: 10.8,
     h: 0.7,
     color: "FFFFFF",
-    fontFace: "Aptos",
+    fontFace: FONT_FACE,
     fontSize: 26,
     bold: true,
     margin: 0,
@@ -18,9 +20,9 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
   });
 
   slide.addShape(PptxGenJS.ShapeType.line, {
-    x: 0.3,
+    x: 0.28,
     y: 2.78,
-    w: 8.9,
+    w: 8.95,
     h: 0,
     line: {
       color: "E6C400",
@@ -29,12 +31,12 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
   });
 
   slide.addText(coverMetadata.subjectLabel, {
-    x: 3.2,
+    x: 3.1,
     y: 3.0,
-    w: 2.0,
+    w: 2.2,
     h: 0.5,
     color: "FFFFFF",
-    fontFace: "Aptos",
+    fontFace: FONT_FACE,
     fontSize: 22,
     bold: true,
     margin: 0,
@@ -46,10 +48,10 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
     {
       x: 4.95,
       y: 3.0,
-      w: 1.4,
+      w: 1.6,
       h: 0.5,
       color: "FFF200",
-      fontFace: "Aptos",
+      fontFace: FONT_FACE,
       fontSize: 22,
       bold: true,
       margin: 0,
@@ -58,12 +60,12 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
   );
 
   slide.addText(coverMetadata.instructorName, {
-    x: 3.7,
-    y: 4.95,
-    w: 2.3,
+    x: 3.55,
+    y: 4.98,
+    w: 2.8,
     h: 0.5,
     color: "FFFFFF",
-    fontFace: "Aptos",
+    fontFace: FONT_FACE,
     fontSize: 22,
     bold: true,
     margin: 0,
@@ -71,24 +73,96 @@ function addCoverSlide(slide: PptxGenJS.Slide, slideDraft: SlideDraft) {
   });
 }
 
-function addSlideContent(
-  slide: PptxGenJS.Slide,
-  content: string[],
-  widthRatio: number
-) {
-  const contentWidth = 13.333 * widthRatio;
-  const contentHeight = 6.6;
-
-  slide.addText(content.join("\n\n"), {
-    x: 0.8,
-    y: 0.7,
-    w: contentWidth,
-    h: contentHeight,
+function addHeader(slide: PptxGenJS.Slide, headerText: string) {
+  slide.addText(headerText, {
+    x: 0.18,
+    y: 0.14,
+    w: 9.5,
+    h: 0.42,
     color: "FFFFFF",
-    fontFace: "Aptos",
-    fontSize: 22,
+    fontFace: FONT_FACE,
+    fontSize: 19,
+    bold: true,
+    margin: 0
+  });
+}
+
+function addFooterNotes(slide: PptxGenJS.Slide, footerNotes?: string[]) {
+  if (!footerNotes?.length) {
+    return;
+  }
+
+  slide.addText(footerNotes.join("   "), {
+    x: 5.1,
+    y: 6.55,
+    w: 7.8,
+    h: 0.28,
+    color: "FFFFFF",
+    fontFace: FONT_FACE,
+    fontSize: 9.5,
+    bold: true,
+    margin: 0,
+    align: "right"
+  });
+}
+
+function addPassageSlide(slide: PptxGenJS.Slide, slideItem: SlideDraftSlide) {
+  addHeader(slide, slideItem.headerText || slideItem.title);
+
+  slide.addText(slideItem.content.join("\n"), {
+    x: 0.66,
+    y: 0.62,
+    w: 10.55,
+    h: slideItem.kind === "passage-full" ? 5.95 : 5.45,
+    color: "FFFFFF",
+    fontFace: FONT_FACE,
+    fontSize: slideItem.kind === "passage-full" ? 16.5 : 22,
+    bold: true,
+    fit: "shrink",
     breakLine: false,
     margin: 0,
+    valign: "top",
+    paraSpaceAfter: 10
+  });
+
+  addFooterNotes(slide, slideItem.footerNotes);
+}
+
+function addChoicesSlide(slide: PptxGenJS.Slide, slideItem: SlideDraftSlide) {
+  addHeader(slide, slideItem.headerText || slideItem.title);
+
+  const choiceRuns: PptxGenJS.TextProps[] = [];
+
+  slideItem.content.forEach((choice, index) => {
+    choiceRuns.push({
+      text: choice,
+      options: {
+        breakLine: true,
+        color: "FFFFFF",
+        fontFace: FONT_FACE,
+        fontSize: 22,
+        bold: true
+      }
+    });
+
+    if (index < slideItem.content.length - 1) {
+      choiceRuns.push({
+        text: "",
+        options: {
+          breakLine: true,
+          fontSize: 8
+        }
+      });
+    }
+  });
+
+  slide.addText(choiceRuns, {
+    x: 0.38,
+    y: 1.25,
+    w: 11.9,
+    h: 4.9,
+    margin: 0,
+    fit: "shrink",
     valign: "top"
   });
 }
@@ -101,8 +175,8 @@ export async function exportSlideDraftToPptx(slideDraft: SlideDraft) {
   pptx.subject = "English PPT Generator";
   pptx.title = slideDraft.title;
   pptx.theme = {
-    headFontFace: "Aptos",
-    bodyFontFace: "Aptos"
+    headFontFace: FONT_FACE,
+    bodyFontFace: FONT_FACE
   };
 
   slideDraft.slides.forEach((slideItem) => {
@@ -114,19 +188,12 @@ export async function exportSlideDraftToPptx(slideDraft: SlideDraft) {
       return;
     }
 
-    slide.addText(slideItem.title, {
-      x: 0.8,
-      y: 0.25,
-      w: 5.5,
-      h: 0.35,
-      color: "FFFFFF",
-      fontFace: "Aptos",
-      fontSize: 11,
-      bold: true,
-      margin: 0
-    });
+    if (slideItem.kind === "choices") {
+      addChoicesSlide(slide, slideItem);
+      return;
+    }
 
-    addSlideContent(slide, slideItem.content, slideItem.widthRatio);
+    addPassageSlide(slide, slideItem);
   });
 
   const buffer = (await pptx.write({
