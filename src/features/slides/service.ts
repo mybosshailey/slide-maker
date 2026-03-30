@@ -1,5 +1,6 @@
 import type {
   AnalysisResult,
+  CoverMetadata,
   ProblemParseResult,
   SlideDraft
 } from "@/features/upload/types";
@@ -30,13 +31,39 @@ function compactChoices(parseResult: ProblemParseResult) {
 
 export function generateSlideDraft(
   parseResult: ProblemParseResult,
-  analysisResult: AnalysisResult
+  analysisResult: AnalysisResult,
+  coverMetadata?: CoverMetadata
 ): SlideDraft {
+  const normalizedCoverMetadata: CoverMetadata = {
+    examTitle: coverMetadata?.examTitle || "2024학년도 대학수학능력시험 해설 강의",
+    subjectLabel: "영어 영역",
+    itemNumber: coverMetadata?.itemNumber || parseResult.itemNumber || "",
+    instructorName: coverMetadata?.instructorName || "김혜린 T"
+  };
+
+  const itemNumberText = normalizedCoverMetadata.itemNumber
+    ? `${normalizedCoverMetadata.itemNumber}번`
+    : "";
+
   return {
     fileId: parseResult.fileId,
     title: analysisResult.documentTitle || "Lesson Draft",
+    coverMetadata: normalizedCoverMetadata,
     provider: "rule-based",
     slides: [
+      {
+        id: `${parseResult.fileId}-cover`,
+        kind: "cover",
+        title: normalizedCoverMetadata.examTitle,
+        background: "#000000",
+        color: "#ffffff",
+        widthRatio: 1,
+        content: [
+          normalizedCoverMetadata.examTitle,
+          normalizedCoverMetadata.subjectLabel
+        ],
+        accentText: itemNumberText || undefined
+      },
       {
         id: `${parseResult.fileId}-passage`,
         kind: "passage",

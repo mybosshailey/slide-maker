@@ -3,6 +3,7 @@
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import { questionTypeOptions } from "@/features/problem-parse/question-options";
 import type {
+  CoverMetadata,
   LessonGenerationResult,
   QuestionTypeHint,
   UploadResponse
@@ -16,6 +17,9 @@ export function UploadCard() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [questionTypeHint, setQuestionTypeHint] = useState<QuestionTypeHint>("auto");
+  const [examTitle, setExamTitle] = useState("2024학년도 대학수학능력시험 해설 강의");
+  const [itemNumber, setItemNumber] = useState("");
+  const [instructorName, setInstructorName] = useState("김혜린 T");
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [serverFile, setServerFile] = useState<UploadResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -78,6 +82,9 @@ export function UploadCard() {
     const formData = new FormData();
     formData.append("image", selectedFile);
     formData.append("questionTypeHint", questionTypeHint);
+    formData.append("examTitle", examTitle);
+    formData.append("itemNumber", itemNumber.replace(/[^0-9]/g, ""));
+    formData.append("instructorName", instructorName);
 
     try {
       setUploadState("uploading");
@@ -103,7 +110,8 @@ export function UploadCard() {
         },
         body: JSON.stringify({
           fileId: uploadPayload.fileId,
-          questionTypeHint: uploadPayload.questionTypeHint
+          questionTypeHint: uploadPayload.questionTypeHint,
+          coverMetadata: uploadPayload.coverMetadata
         })
       });
 
@@ -182,6 +190,45 @@ export function UploadCard() {
           </div>
           <div className="preview-grid">
             <div className="hint-field">
+              <label className="hint-label" htmlFor="exam-title">
+                시험명
+              </label>
+              <input
+                id="exam-title"
+                className="hint-select"
+                value={examTitle}
+                onChange={(event) => setExamTitle(event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+                type="text"
+                placeholder="2024학년도 대학수학능력시험 해설 강의"
+              />
+              <label className="hint-label" htmlFor="item-number">
+                문항 번호
+              </label>
+              <input
+                id="item-number"
+                className="hint-select"
+                value={itemNumber}
+                onChange={(event) =>
+                  setItemNumber(event.target.value.replace(/[^0-9]/g, ""))
+                }
+                onClick={(event) => event.stopPropagation()}
+                type="text"
+                inputMode="numeric"
+                placeholder="34"
+              />
+              <label className="hint-label" htmlFor="instructor-name">
+                강사명
+              </label>
+              <input
+                id="instructor-name"
+                className="hint-select"
+                value={instructorName}
+                onChange={(event) => setInstructorName(event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+                type="text"
+                placeholder="김혜린 T"
+              />
               <label className="hint-label" htmlFor="question-type-hint">
                 Problem type
               </label>
@@ -200,7 +247,7 @@ export function UploadCard() {
                 ))}
               </select>
               <p className="meta-label">
-                자동 감지가 애매한 경우 직접 선택하면 문제 분리 정확도를 높일 수 있어요.
+                과목은 영어 영역으로 고정됩니다. 번호는 숫자만 입력하면 PPT에서 `번`이 붙습니다.
               </p>
             </div>
             <div className="preview-meta">

@@ -6,6 +6,7 @@ export type UploadResponse = {
   size: number;
   previewUrl: string;
   questionTypeHint: QuestionTypeHint;
+  coverMetadata: CoverMetadata;
 };
 
 export type OCRResult = {
@@ -81,19 +82,28 @@ export type AnalysisResult = {
   provider: "openai" | "mock";
 };
 
+export type CoverMetadata = {
+  examTitle: string;
+  subjectLabel: "영어 영역";
+  itemNumber: string;
+  instructorName: string;
+};
+
 export type SlideDraftSlide = {
   id: string;
-  kind: "passage" | "choices";
+  kind: "cover" | "passage" | "choices";
   title: string;
   background: "#000000";
   color: "#ffffff";
   widthRatio: number;
   content: string[];
+  accentText?: string;
 };
 
 export type SlideDraft = {
   fileId: string;
   title: string;
+  coverMetadata: CoverMetadata;
   slides: SlideDraftSlide[];
   provider: "rule-based";
 };
